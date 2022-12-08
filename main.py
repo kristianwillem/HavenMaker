@@ -55,6 +55,7 @@ def load_dungeon(dungeon_name):
     placements_data = dungeon_data.iat[12, 0]
     start_data = dungeon_data.iat[13, 0]
 
+
     new_dungeon = Dungeon(goal_data, rules_data, rooms_data, connections_data, monster_data, obstacles_data, traps_data, h_terrain_data, d_terrain_data, chest_data, coins_data, theme_data, placements_data, start_data)
     return new_dungeon
 
