@@ -7,8 +7,7 @@ class Dungeon:
         # string
         self.rules = rules
 
-        # dictionary (keys: room names, values: side (string), theme (sting))
-        # making rooms into objects, and thus this into a list of objects, may work better.
+        # list of Room objects
         self.rooms = rooms
 
         # list of lists (roomA name, roomA coordinates, roomB name, roomB coordinates)
