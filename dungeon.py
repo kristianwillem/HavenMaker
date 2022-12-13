@@ -4,16 +4,18 @@ class Dungeon:
         # string
         self.goal = goal
 
-        # string
+        # set of strings
         self.rules = rules
 
         # list of Room objects
+        # Something to keep in mind, these rooms are already rotated.
+        # in reading the dungeon, it should copy the room classes and rotate the new ones.
         self.rooms = rooms
 
-        # list of lists (roomA name, roomA coordinates, roomB name, roomB coordinates)
+        # list of lists (roomA object, roomA coordinates, roomB object, roomB coordinates)
         self.connections = connections
 
-        # dictionary (keys: monster names, values: normal amount, elite amount)
+        # dictionary (keys: monster names, values: [monster object, normal amount, elite amount])
         self.monsters = dungeon_monsters
 
         # int (amount)
@@ -43,5 +45,11 @@ class Dungeon:
         # int
         self.start = start
 
+        # list of coordinates
+        self.coordinates = []
+        self.get_coordinates()
+
+    def get_coordinates:
+        # add rooms through connections
 
 

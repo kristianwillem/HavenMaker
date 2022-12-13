@@ -9,6 +9,8 @@ def generate():
     # Initialize
     # This part loads all the necessary data for the program to function.
 
+    # load rules, rooms, monsters
+
     #should hold dungeon files (their names at least)
     dungeons = []
 
@@ -19,12 +21,12 @@ def generate():
         fitness = apply_fitness(initial_dungeon)
         population.append([initial_dungeon, fitness])
 
+    # initialize mutation
+    # Mutation should be initialized after the Dungeons since min_size/max_size depends on it.
+
 
     # Evolutionary Loop
     # This part runs the evolutionary cycle.
-
-
-
     for iteration in range(100):
         parents = select_parents(population)
         new_dungeon = crossover(parents)
