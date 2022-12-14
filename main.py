@@ -1,6 +1,7 @@
 from dungeon import Dungeon
 from mutation import mutate
 from fitness import apply_fitness
+from validity import check_validity
 import random
 import pandas
 
@@ -32,7 +33,7 @@ def generate():
         new_dungeon = crossover(parents)
         new_dungeon = mutate(new_dungeon)
         new_dungeon = fix(new_dungeon)
-        valid = validity(new_dungeon)
+        valid = check_validity(new_dungeon)
         if valid:
             fitness = apply_fitness(new_dungeon)
             population.append([new_dungeon, fitness])
@@ -107,7 +108,6 @@ def fix(dungeon):
         if dungeon.placement[entry] > dungeon.entry:
 
 
-def validity(dungeon):
 
 
 

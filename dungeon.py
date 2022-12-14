@@ -52,11 +52,6 @@ class Dungeon:
     def get_coordinates:
         # add rooms through connections
 
-    def is_adjacent (self, coordinate_a, coordinate_b):
-        adjacent_check = [coordinate_a[0]-coordinate_b[0], coordinate_a[1]-coordinate_b[1], coordinate_a[2]-coordinate_b[2]]
-        if -1 in adjacent_check and 0 in adjacent_check and 1 in adjacent_check:
-            return True
-        else:
-            return False
+
 
 
