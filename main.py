@@ -1,6 +1,6 @@
 from dungeon import Dungeon
-from mutation import mutate
-from fitness import apply_fitness
+import mutation
+import fitness
 from validity import check_validity
 import random
 import pandas
@@ -32,7 +32,7 @@ def generate():
         parents = select_parents(population)
         new_dungeon = crossover(parents)
         new_dungeon = mutate(new_dungeon)
-        new_dungeon = fix(new_dungeon)
+        fix(new_dungeon)
         valid = check_validity(new_dungeon)
         if valid:
             fitness = apply_fitness(new_dungeon)
@@ -62,6 +62,7 @@ def load_dungeon(dungeon_name):
     new_dungeon = Dungeon(goal_data, rules_data, rooms_data, connections_data, monster_data, obstacles_data, traps_data, h_terrain_data, d_terrain_data, chest_data, coins_data, theme_data, placements_data, start_data)
     return new_dungeon
 
+
 def select_parents(possible_parents):
     parent_1 = 0
     parent_2 = 0
@@ -69,6 +70,7 @@ def select_parents(possible_parents):
         parent_1 = select_parent(possible_parents)
         parent_2 = select_parent(possible_parents)
     return [parent_1, parent_2]
+
 
 def select_parent(possible_parents):
     total_score = 0
@@ -79,6 +81,7 @@ def select_parent(possible_parents):
         chosen_score -= entry.score
         if chosen_score << 0:
             return entry
+
 
 def crossover(parents):
     crossover_list = []
@@ -102,16 +105,41 @@ def crossover(parents):
     new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_coins, new_chests, new_theme, new_placements, new_start)
     return new_dungeon
 
+
 def fix(dungeon):
-    # how to get this to work (specifically; referring to a specific attribute of a class that has the same name as a variable)
-    for entry in dungeon.placement.keys():
-        if dungeon.placement[entry] > dungeon.entry:
+    # create a "component" dictionary that basically copies the placement dictionary.
+    components = dict()
+    monster_count = 0
+    for monster_type in dungeon.monsters:
+        type_values = dungeon.monsters[monster_type]
+        monster_count += type_values[1]
+        monster_count += type_values[2]
+    components["Monsters"] = monster_count
+    components["Obstacles"] = dungeon.obstacles
+    components["Traps"] = dungeon.traps
+    components["Hazardous Terrain"] = dungeon.h_terrain
+    components["Difficult Terrain"] = dungeon.d_terrain
+    components["Chests"] = len(dungeon.chests)
+    components["Coins"] = dungeon.coins
+    components["Starts"] = dungeon.start
 
-
-
-
-
-
+    for entry in dungeon.placements:
+        component_count = components[entry]
+        placement_count = len(dungeon.placements[entry])
+        if component_count < placement_count:
+            new_entry = random.choices(entry, k=component_count)
+            dungeon.placements[entry] = new_entry
+        while component_count > placement_count:
+            # get all coordinates
+            available_coordinates = dungeon.coordinates
+            # remove filled coordinates
+            for placement_type in dungeon.placements:
+                for filled_coordinate in dungeon.placements[placement_type]:
+                    available_coordinates.remove(filled_coordinate)
+            # add a random empty coordinate
+            new_entry = entry.copy()
+            new_entry.append(random.choice(available_coordinates))
+            dungeon.placements[entry] = new_entry
 
 if __name__ == '__main__':
     generate()
