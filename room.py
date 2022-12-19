@@ -3,7 +3,7 @@ class Room:
     def __init__(self, name, side, theme, coordinates, links, hexes):
         self.name = name
         self.side = side
-        self. theme = theme
+        self.theme = theme
         self.coordinates = coordinates
 
         # combined entries/exits into links
@@ -29,4 +29,3 @@ class Room:
                 oc = link_coordinates.copy()
                 link[0] = [-oc[1], -oc[2], -oc[0]]
             self.rotation = (self.rotation+1) % 6
-

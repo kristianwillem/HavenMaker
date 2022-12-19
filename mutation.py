@@ -1,4 +1,6 @@
 import random
+import uf
+
 
 class Mutation:
 
@@ -188,5 +190,59 @@ class Mutation:
             return chosen_connection
 
     def mutate_placement(self, dungeon):
-        possible_coordinates = dungeon.get_coordinates()
+        possible_coordinates = dungeon.get_coordinates().copy()
 
+        dungeon.start = 4
+        looking_for_start = True
+        while looking_for_start:
+            other_starts = []
+            random_start = random.choice(possible_coordinates)
+            for other in possible_coordinates:
+                if uf.is_adjacent(random_start, other):
+                    other_starts.append(other)
+            if len(other_starts) < 6:
+                looking_for_start = False
+
+        certain_starts = random_start
+
+        # while we don't have enough start locations, get more.
+        while len(other_starts) + len(certain_starts) < dungeon.start:
+            extra_start = random.choice(other_starts)
+            other_starts.remove(extra_start)
+            certain_starts.append(extra_start)
+            for other in possible_coordinates:
+                if uf.is_adjacent(extra_start, other) and other not in other_starts and other not in certain_starts:
+                    other_starts.append(other)
+
+        all_starts = certain_starts.extend(random.choices(other_starts, k=(dungeon.start - len(certain_starts))))
+        dungeon.placement["start"] = all_starts
+
+        # remove the starts from the possible coordinates
+        for used_coordinate in all_starts:
+            possible_coordinates.remove(used_coordinate)
+
+        # create a "component" dictionary that basically copies the placement dictionary, except for start.
+        components = dict()
+        monster_count = 0
+        for monster_type in dungeon.monsters:
+            type_values = dungeon.monsters[monster_type]
+            monster_count += type_values[1]
+            monster_count += type_values[2]
+        components["monsters"] = monster_count
+        components["obstacles"] = dungeon.obstacles
+        components["traps"] = dungeon.traps
+        components["hazardous terrain"] = dungeon.h_terrain
+        components["difficult terrain"] = dungeon.d_terrain
+        components["chests"] = len(dungeon.chests)
+        components["coins"] = dungeon.coins
+
+        for entry in dungeon.placements:
+            if entry != "start":
+                component_count = components[entry]
+                # get a number of random available coordinates equal to the component count
+                new_coordinates = random.choices(possible_coordinates, k=component_count)
+                dungeon.placements[entry] = new_coordinates
+
+                # remove the coordinates from the available list
+                for used_coordinate in new_coordinates:
+                    possible_coordinates.remove(used_coordinate)

@@ -1,66 +1,58 @@
 from dungeon import Dungeon
-import mutation
-import fitness
+from mutation import Mutation
+from fitness import Fitness
 from validity import check_validity
 import random
-import pandas
+import load
+
 
 def generate():
 
     # Initialize
     # This part loads all the necessary data for the program to function.
-
     # load rules, rooms, monsters
+    all_rules = load.load_rules()
+    all_rooms = load.load_rooms()
+    all_monsters = load.load_monsters()
+    all_chests = load.load_chests()
+    ff = Fitness()
 
-    #should hold dungeon files (their names at least)
+    # should hold dungeon files (their names at least)
     dungeons = []
 
     # load Dungeons
     population = []
     for name in dungeons:
-        initial_dungeon = load_dungeon(name)
-        fitness = apply_fitness(initial_dungeon)
+        initial_dungeon = load.load_dungeon(name)
+        fitness = ff.apply_fitness(initial_dungeon)
         population.append([initial_dungeon, fitness])
+
+    sizes = []
+    for dungeon_set in population:
+        dungeon = dungeon_set[0]
+        dungeon_size = len(dungeon.connections)
+        for room in dungeon.rooms:
+            dungeon_size += room.hexes
+        sizes.append(dungeon_size)
+
+    min_size = min(sizes)
+    max_size = max(sizes)
 
     # initialize mutation
     # Mutation should be initialized after the Dungeons since min_size/max_size depends on it.
-
+    mutation = Mutation(all_rules, all_rooms, all_monsters, all_chests, min_size, max_size)
 
     # Evolutionary Loop
     # This part runs the evolutionary cycle.
     for iteration in range(100):
         parents = select_parents(population)
         new_dungeon = crossover(parents)
-        new_dungeon = mutate(new_dungeon)
+        new_dungeon = mutation.mutate(new_dungeon)
         fix(new_dungeon)
         valid = check_validity(new_dungeon)
         if valid:
-            fitness = apply_fitness(new_dungeon)
+            fitness = ff.apply_fitness(new_dungeon)
             population.append([new_dungeon, fitness])
-
-
-def load_dungeon(dungeon_name):
-    file_name = dungeon_name + ".glm"
-    dungeon_data = pandas.read_csv(file_name)
-
-    goal_data = dungeon_data.iat[0, 0]
-    rules_data = dungeon_data.iat[1, 0]
-    rooms_data = dungeon_data.iat[2, 0]
-    connections_data = dungeon_data.iat[3, 0]
-    monster_data = dungeon_data.iat[4, 0]
-    obstacles_data = dungeon_data.iat[5, 0]
-    traps_data = dungeon_data.iat[6, 0]
-    h_terrain_data = dungeon_data.iat[7, 0]
-    d_terrain_data = dungeon_data.iat[8, 0]
-    chest_data = dungeon_data.iat[9, 0]
-    coins_data = dungeon_data.iat[10, 0]
-    theme_data = dungeon_data.iat[11, 0]
-    placements_data = dungeon_data.iat[12, 0]
-    start_data = dungeon_data.iat[13, 0]
-
-
-    new_dungeon = Dungeon(goal_data, rules_data, rooms_data, connections_data, monster_data, obstacles_data, traps_data, h_terrain_data, d_terrain_data, chest_data, coins_data, theme_data, placements_data, start_data)
-    return new_dungeon
 
 
 def select_parents(possible_parents):
@@ -114,21 +106,23 @@ def fix(dungeon):
         type_values = dungeon.monsters[monster_type]
         monster_count += type_values[1]
         monster_count += type_values[2]
-    components["Monsters"] = monster_count
-    components["Obstacles"] = dungeon.obstacles
-    components["Traps"] = dungeon.traps
-    components["Hazardous Terrain"] = dungeon.h_terrain
-    components["Difficult Terrain"] = dungeon.d_terrain
-    components["Chests"] = len(dungeon.chests)
-    components["Coins"] = dungeon.coins
-    components["Starts"] = dungeon.start
+    components["monsters"] = monster_count
+    components["obstacles"] = dungeon.obstacles
+    components["traps"] = dungeon.traps
+    components["hazardous terrain"] = dungeon.h_terrain
+    components["difficult terrain"] = dungeon.d_terrain
+    components["chests"] = len(dungeon.chests)
+    components["coins"] = dungeon.coins
+    components["start"] = dungeon.start
 
     for entry in dungeon.placements:
         component_count = components[entry]
         placement_count = len(dungeon.placements[entry])
         if component_count < placement_count:
-            new_entry = random.choices(entry, k=component_count)
+            new_entry = random.choices(dungeon.placements[entry], k=component_count)
             dungeon.placements[entry] = new_entry
+
+        # consider changing this to use difference instead of a while loop.
         while component_count > placement_count:
             # get all coordinates
             available_coordinates = dungeon.coordinates
@@ -137,9 +131,11 @@ def fix(dungeon):
                 for filled_coordinate in dungeon.placements[placement_type]:
                     available_coordinates.remove(filled_coordinate)
             # add a random empty coordinate
-            new_entry = entry.copy()
+            new_entry = dungeon.placements[entry].copy()
             new_entry.append(random.choice(available_coordinates))
             dungeon.placements[entry] = new_entry
+            placement_count = len(dungeon.placements[entry])
+
 
 if __name__ == '__main__':
     generate()

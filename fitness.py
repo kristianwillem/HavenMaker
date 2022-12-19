@@ -1,3 +1,5 @@
+import math
+
 class Fitness:
     def __init__(self):
         self.difficulty_weight = 4
@@ -7,9 +9,11 @@ class Fitness:
         self.clutter_weight = 2
 
         # there is no ideal for theme since more coherent is always better.
-        self.difficulty_ideal = X
+        # difficulty between 30 and 36 according to Isaac Childres
+        # That value is halved for 2 players, but doubled for the difficulty system used.
+        self.difficulty_ideal = 32
         self.size_ideal = X
-        self.complexity_ideal = X
+        self.complexity_ideal = 1
         self.clutter_ideal = X
         # last one should be a fraction
 
@@ -52,11 +56,24 @@ class Fitness:
         return complexity_score
 
     def theme_fitness(self, dungeon):
-        theme_number = 0
-
-        # get theme numbers
-
+        # monsters
+        # go through list of monsters, add themes to set
+        monster_themes = set()
+        for monster in dungeon.monsters:
+            monster_themes.add(monster.theme)
+        # rooms
+        # go through list of rooms, add themes to set
+        room_themes = set()
+        for room in dungeon.rooms:
+            room_themes.add(room.theme)
         # get theme score
+        # factorial is used to ensure that more deviancy from a single theme returns a significantly lower score.
+        theme_number = math.factorial(len(monster_themes)) + math.factorial(len(room_themes)) - 2
+        if theme_number > 20:
+            theme_score = 0
+        else:
+            theme_score = 1 - (theme_number/20)
+        return theme_score
 
     def clutter_fitness(self, dungeon):
         # get filled hexes from placement

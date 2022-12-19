@@ -50,10 +50,12 @@ class Dungeon:
 
         # list of coordinates
         self.coordinates = []
+        self.connection_coordinates = []
         self.get_coordinates()
 
     def get_coordinates(self):
         # add rooms through connections
+        self.connection_coordinates = []
         first_room = self.rooms[0]
         used_rooms = [first_room]
         self.coordinates = first_room.coordinates
@@ -86,6 +88,8 @@ class Dungeon:
                         dungeon_coordinate = uf.add_coordinates(coordinate, difference)
                         self.coordinates.append(dungeon_coordinate)
                     unused_connections.remove(connection)
+                    # add connection coordinates
+                    self.connection_coordinates.append(old_coordinates)
 
                     # add difference to all other connections that come from the new room.
                     for other_connection in unused_connections:
@@ -102,6 +106,3 @@ class Dungeon:
         # if they both are, remove the connection
         # if only one is, get the coordinates of the other and remove the room from the list.
         # coordinates can be calculated with: add to each coordinate (old room connection - new room connection)
-
-
-

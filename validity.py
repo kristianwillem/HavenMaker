@@ -1,3 +1,5 @@
+import uf
+
 
 def check_validity(dungeon):
     overlap = overlap_check(dungeon)
@@ -21,7 +23,8 @@ def reachability_check(dungeon):
     start_locations = dungeon.placements["start"]
     monster_locations = dungeon.placements["monsters"]
     main_start = start_locations[0]
-    coordinates = dungeon.coordinates
+    coordinates = dungeon.coordinates.copy()
+    coordinates.extend(dungeon.connection_coordinates)
     for obstacle_hex in dungeon.placements["obstacles"]:
         coordinates.remove(obstacle_hex)
     # do the actual search
@@ -47,7 +50,7 @@ def search(coordinates, start, finish):
 
     while next_nodes != [] or current_node == start:
         for node in unvisited_nodes:
-            if is_adjacent(current_node, node):
+            if uf.is_adjacent(current_node, node):
                 next_nodes.append(node)
                 unvisited_nodes.remove(node)
         if finish in next_nodes:
@@ -62,11 +65,3 @@ def search(coordinates, start, finish):
     # if the finish node is in next_nodes, return true
     # when done, put the current node in past_nodes, then pop the next_nodes to current_node
     # if next_nodes is empty, return false.
-
-
-def is_adjacent(coordinate_a, coordinate_b):
-    adjacent_check = [coordinate_a[0]-coordinate_b[0], coordinate_a[1]-coordinate_b[1], coordinate_a[2]-coordinate_b[2]]
-    if -1 in adjacent_check and 0 in adjacent_check and 1 in adjacent_check:
-        return True
-    else:
-        return False
