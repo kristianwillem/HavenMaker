@@ -12,10 +12,10 @@ class Fitness:
         # difficulty between 30 and 36 according to Isaac Childres
         # That value is halved for 2 players, but doubled for the difficulty system used.
         self.difficulty_ideal = 32
-        self.size_ideal = X
+        self.size_ideal = 90
         self.complexity_ideal = 1
-        self.clutter_ideal = X
-        # last one should be a fraction
+        self.clutter_ideal = 0.344
+        # last one should be a number between 0 and 1
 
     def apply_fitness(self, dungeon):
         difficulty = self.difficulty_fitness(dungeon)

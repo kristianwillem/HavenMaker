@@ -17,15 +17,12 @@ def generate():
     all_chests = load.load_chests()
     ff = Fitness()
 
-    # should hold dungeon files (their names at least)
-    dungeons = []
-
     # load Dungeons
     population = []
-    for name in dungeons:
-        initial_dungeon = load.load_dungeon(name)
-        fitness = ff.apply_fitness(initial_dungeon)
-        population.append([initial_dungeon, fitness])
+    initial_dungeons = load.load_dungeon(all_rooms, all_monsters)
+    for specific_dungeon in initial_dungeons:
+        fitness = ff.apply_fitness(specific_dungeon)
+        population.append([specific_dungeon, fitness])
 
     sizes = []
     for dungeon_set in population:
