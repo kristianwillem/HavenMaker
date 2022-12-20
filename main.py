@@ -11,6 +11,7 @@ def generate():
     # Initialize
     # This part loads all the necessary data for the program to function.
     # load rules, rooms, monsters
+    cycles = 10
     all_rules = load.load_rules()
     all_rooms = load.load_rooms()
     all_monsters = load.load_monsters()
@@ -41,7 +42,7 @@ def generate():
 
     # Evolutionary Loop
     # This part runs the evolutionary cycle.
-    for iteration in range(100):
+    for iteration in range(cycles):
         parents = select_parents(population)
         new_dungeon = crossover(parents)
         new_dungeon = mutation.mutate(new_dungeon)

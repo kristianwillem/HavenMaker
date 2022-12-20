@@ -2,7 +2,12 @@ from dungeon import Dungeon
 from room import Room
 from monster import Monster
 
-import files.chests_file, files.dungeons_file, files.monsters_file, files.rooms_file, files.rules_file
+import files.chests_file
+import files.dungeons_file
+import files.monsters_file
+import files.rooms_file
+import files.rules_file
+
 
 def load_rules():
     all_rules = files.rules_file.rules
@@ -21,7 +26,7 @@ def load_rooms():
         room_side = room["side"]
         room_theme = room["theme"]
         room_coordinates = room["coordinates"]
-        room_links = room ["links"]
+        room_links = room["links"]
         room_hexes = len(room_coordinates)
         all_rooms.append(Room(room_name, room_side, room_theme, room_coordinates, room_links, room_hexes))
     return all_rooms
