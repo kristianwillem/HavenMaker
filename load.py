@@ -61,17 +61,19 @@ def load_dungeon(all_rooms, all_monsters):
                 if room_name == possible_room.name and room_side == possible_room.side:
                     room_class = copy.copy(possible_room)
                     dungeon_rooms.append(room_class)
-                    # unsure whether this works. If not, change this to work similar to connection/monsters
-                    dungeon_rooms[-1] = dungeon_rooms[-1].rotate(used_room[2])
+                    # Perhaps change this to work similar to connection/monsters
+                    dungeon_rooms[-1].rotate(used_room[2])
 
         # change all connection names to their corresponding room classes
         dungeon_connections = specific_dungeon["connections"]
         for used_connection in dungeon_connections:
             for connected_room in dungeon_rooms:
                 if used_connection[0] == connected_room.name:
-                    used_connection[0] = connected_room
+                    room_a = connected_room
                 if used_connection[2] == connected_room.name:
-                    used_connection[2] = connected_room
+                    room_b = connected_room
+            used_connection[0] = room_a
+            used_connection[2] = room_b
 
         # get dungeon monsters
         dungeon_monsters = specific_dungeon["dungeon_monsters"]

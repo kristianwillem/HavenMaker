@@ -59,7 +59,7 @@ class Dungeon:
         first_room = self.rooms[0]
         used_rooms = [first_room]
         self.coordinates = first_room.coordinates
-        unused_connections = self.connections.copy
+        unused_connections = self.connections.copy()
         while unused_connections:
             for connection in unused_connections:
                 connect = False
@@ -97,6 +97,8 @@ class Dungeon:
                             other_connection[1] = uf.add_coordinates(other_connection[1], difference)
                         if new_room == other_connection[2]:
                             other_connection[3] = uf.add_coordinates(other_connection[3], difference)
+
+                    used_rooms.append(new_room)
 
         # start with the base room (first in the list)
         # make a copy of connections called "unused_connections"
