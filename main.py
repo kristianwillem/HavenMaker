@@ -11,7 +11,7 @@ def generate():
     # Initialize
     # This part loads all the necessary data for the program to function.
     # load rules, rooms, monsters
-    cycles = 10
+    cycles = 1
     all_rules = load.load_rules()
     all_rooms = load.load_rooms()
     all_monsters = load.load_monsters()

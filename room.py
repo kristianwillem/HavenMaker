@@ -25,7 +25,7 @@ class Room:
                 oc = coordinate.copy()
                 coordinate = [-oc[1], -oc[2], -oc[0]]
             for link in self.links:
-                link_coordinates = link[0]
+                link_coordinates = link[0:3]
                 oc = link_coordinates.copy()
-                link[0] = [-oc[1], -oc[2], -oc[0]]
+                link[0:3] = [-oc[1], -oc[2], -oc[0]]
             self.rotation = (self.rotation+1) % 6

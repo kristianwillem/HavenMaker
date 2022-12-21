@@ -1,5 +1,6 @@
 import random
 import uf
+import copy
 
 
 class Mutation:
@@ -111,7 +112,7 @@ class Mutation:
         mutate_loop = True
         while mutate_loop:
             # select random room
-            new_room = random.choice(self.all_rooms).copy()
+            new_room = copy.copy(random.choice(self.all_rooms))
             valid_room = True
 
             if not dungeon.rooms:

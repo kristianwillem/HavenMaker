@@ -1,6 +1,7 @@
 from dungeon import Dungeon
 from room import Room
 from monster import Monster
+import copy
 
 import files.chests_file
 import files.dungeons_file
@@ -58,9 +59,10 @@ def load_dungeon(all_rooms, all_monsters):
             room_side = used_room[1]
             for possible_room in all_rooms:
                 if room_name == possible_room.name and room_side == possible_room.side:
-                    dungeon_rooms.append(possible_room.copy())
+                    room_class = copy.copy(possible_room)
+                    dungeon_rooms.append(room_class)
                     # unsure whether this works. If not, change this to work similar to connection/monsters
-                    dungeon_rooms[-1] = dungeon_rooms[-1].rotate[used_room[3]]
+                    dungeon_rooms[-1] = dungeon_rooms[-1].rotate(used_room[2])
 
         # change all connection names to their corresponding room classes
         dungeon_connections = specific_dungeon["connections"]
