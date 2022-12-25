@@ -29,8 +29,10 @@ class Fitness:
     def difficulty_fitness(self, dungeon):
         difficulty_number = 0
         for monster_type in dungeon.monsters:
-            monster_amounts = dungeon.monsters[monster_type]
-            monster_difficulty = monster_type.difficulty * (monster_amounts[0] + 2 * monster_amounts[1])
+            monster_data = dungeon.monsters[monster_type]
+            monster_class = monster_data[0]
+            monster_amounts = [monster_data[1], monster_data[2]]
+            monster_difficulty = monster_class.difficulty * (monster_amounts[0] + 2 * monster_amounts[1])
             difficulty_number += monster_difficulty
         # create difficulty_score from difficulty_number and ideal_difficulty
         # score = 0 if number-ideal = ideal, and 1 if number-ideal = 0
@@ -60,7 +62,8 @@ class Fitness:
         # go through list of monsters, add themes to set
         monster_themes = set()
         for monster in dungeon.monsters:
-            monster_themes.add(monster.theme)
+            monster_class = dungeon.monsters[monster][0]
+            monster_themes.add(monster_class.theme)
         # rooms
         # go through list of rooms, add themes to set
         room_themes = set()

@@ -12,20 +12,25 @@ class Room:
         self.links = links
         self.hexes = hexes
 
-        # rotation in steps of 60 degrees. Base of every room is 0.
-        self.rotation = 0
-
     def __eq__(self, other):
         return self.name == other.name
 
     def rotate(self, angle):
         # change the coordinates and links because of rotation.
+        # rotation in steps of 60 degrees. Base of every room is 0.
+        rotated_coordinates = self.coordinates.copy()
+        rotated_links = self.links.copy()
         for step in range(angle):
-            for coordinate in self.coordinates:
-                oc = coordinate.copy()
+            for i in range(len(rotated_coordinates)):
+                oc = rotated_coordinates[i]
                 coordinate = [-oc[1], -oc[2], -oc[0]]
-            for link in self.links:
+                rotated_coordinates[i] = coordinate
+            for link in rotated_links:
                 link_coordinates = link[0:3]
-                oc = link_coordinates.copy()
+                oc = link_coordinates
                 link[0:3] = [-oc[1], -oc[2], -oc[0]]
-            self.rotation = (self.rotation+1) % 6
+                link[3] = (link[3]+2) % 12
+        return rotated_coordinates, rotated_links
+
+    def __hash__(self):
+        return id(self)

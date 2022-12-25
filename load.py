@@ -54,15 +54,15 @@ def load_dungeon(all_rooms, all_monsters):
         # get dungeon rooms as classes
         raw_rooms = specific_dungeon["rooms"]
         dungeon_rooms = []
+        dungeon_rotations = {}
         for used_room in raw_rooms:
             room_name = used_room[0]
             room_side = used_room[1]
+            room_rotation = used_room[2]
             for possible_room in all_rooms:
                 if room_name == possible_room.name and room_side == possible_room.side:
-                    room_class = copy.copy(possible_room)
-                    dungeon_rooms.append(room_class)
-                    # Perhaps change this to work similar to connection/monsters
-                    dungeon_rooms[-1].rotate(used_room[2])
+                    dungeon_rooms.append(possible_room)
+                    dungeon_rotations[possible_room] = room_rotation
 
         # change all connection names to their corresponding room classes
         dungeon_connections = specific_dungeon["connections"]
@@ -76,11 +76,12 @@ def load_dungeon(all_rooms, all_monsters):
             used_connection[2] = room_b
 
         # get dungeon monsters
-        dungeon_monsters = specific_dungeon["dungeon_monsters"]
-        for used_monster in dungeon_monsters:
+        dungeon_monsters = {}
+        data_monsters = specific_dungeon["dungeon_monsters"]
+        for used_monster in data_monsters:
             for possible_monster in all_monsters:
                 if used_monster[0] == possible_monster.name:
-                    used_monster[0] = possible_monster
+                    dungeon_monsters[used_monster[0]] = [possible_monster, used_monster[1], used_monster[2]]
 
         dungeon_obstacles = specific_dungeon["obstacles"]
         dungeon_traps = specific_dungeon["traps"]
@@ -92,5 +93,5 @@ def load_dungeon(all_rooms, all_monsters):
         dungeon_placements = specific_dungeon["placements"]
         dungeon_start = specific_dungeon["start"]
 
-        all_dungeons.append(Dungeon(dungeon_goal, dungeon_rules, dungeon_rooms, dungeon_connections, dungeon_monsters, dungeon_obstacles, dungeon_traps, dungeon_h_terrain, dungeon_d_terrain, dungeon_chests, dungeon_coins, dungeon_theme, dungeon_placements, dungeon_start))
+        all_dungeons.append(Dungeon(dungeon_goal, dungeon_rules, dungeon_rooms, dungeon_rotations, dungeon_connections, dungeon_monsters, dungeon_obstacles, dungeon_traps, dungeon_h_terrain, dungeon_d_terrain, dungeon_chests, dungeon_coins, dungeon_theme, dungeon_placements, dungeon_start))
     return all_dungeons

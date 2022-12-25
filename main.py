@@ -65,12 +65,13 @@ def select_parents(possible_parents):
 def select_parent(possible_parents):
     total_score = 0
     for entry in possible_parents:
-        total_score += entry.score
+        # this is a quick and dirty solution. It might be better to improve this at some time.
+        total_score += round(entry[1]*100)
     chosen_score = random.randrange(0, total_score)
     for entry in possible_parents:
-        chosen_score -= entry.score
+        chosen_score -= round(entry[1]*100)
         if chosen_score << 0:
-            return entry
+            return entry[0]
 
 
 def crossover(parents):
@@ -80,6 +81,7 @@ def crossover(parents):
     new_goal = parents[crossover_list[0]].goal
     new_rules = parents[crossover_list[0]].rules
     new_rooms = parents[crossover_list[1]].rooms
+    new_rotations = parents[crossover_list[1]].room_rotations
     new_connections = parents[crossover_list[1]].connections
     new_theme = parents[crossover_list[1]].theme
     new_placements = parents[crossover_list[1]].placements
@@ -92,7 +94,7 @@ def crossover(parents):
     new_chests = parents[crossover_list[4]].chests
     new_coins = parents[crossover_list[4]].coins
 
-    new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_coins, new_chests, new_theme, new_placements, new_start)
+    new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_rotations, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_coins, new_chests, new_theme, new_placements, new_start)
     return new_dungeon
 
 

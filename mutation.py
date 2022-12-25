@@ -1,6 +1,5 @@
 import random
 import uf
-import copy
 
 
 class Mutation:
@@ -46,8 +45,8 @@ class Mutation:
                 mutate_loop = False
 
     def mutate_monsters(self, dungeon):
-        for i in range(len(dungeon.monsters)):
-            old_monster = dungeon.monsters[i]
+        for monster in dungeon.monsters:
+            old_monster = dungeon.monsters[monster]
             monster_type = old_monster[0]
             normal_amount = old_monster[1]
             elite_amount = old_monster[2]
@@ -68,16 +67,19 @@ class Mutation:
             new_elite_amount = round(elite_amount * difficulty_ratio)
 
             new_monster = [new_monster_type, new_normal_amount, new_elite_amount]
-            dungeon.monsters[i] = new_monster
+            dungeon.monsters[monster] = new_monster
 
     def mutate_environment(self, dungeon):
         # using gaussian to create a 95% chance that the new number will be between 0.5 and 1.5 times the original.
         environment_list = [dungeon.obstacles, dungeon.traps, dungeon.h_terrain, dungeon.d_terrain]
         for i in range(len(environment_list)):
             mu = environment_list[i]
-            sigma = mu/4
+            if mu == 0:
+                sigma = 1
+            else:
+                sigma = mu/4
             new_entry = round(random.normalvariate(mu, sigma))
-            environment_list[i] = new_entry
+            environment_list[i] = abs(new_entry)
         dungeon.obstacles = environment_list[0]
         dungeon.traps = environment_list[1]
         dungeon.h_terrain = environment_list[2]
@@ -87,9 +89,12 @@ class Mutation:
         # new amount of coins, similar to environment
         coin_amount = dungeon.coins
         mu = coin_amount
-        sigma = coin_amount/4
+        if mu == 0:
+            sigma = 1
+        else:
+            sigma = coin_amount/4
         new_coins = round(random.normalvariate(mu, sigma))
-        dungeon.coins = new_coins
+        dungeon.coins = abs(new_coins)
 
         # new treaure, similar to rules
         chest_chance = self.chest_chance_base
@@ -112,12 +117,13 @@ class Mutation:
         mutate_loop = True
         while mutate_loop:
             # select random room
-            new_room = copy.copy(random.choice(self.all_rooms))
+            new_room = random.choice(self.all_rooms)
             valid_room = True
 
             if not dungeon.rooms:
                 dungeon.theme = new_room.theme
                 new_connection = []
+                new_rotation = 0
             else:
                 # check if the room is available
                 for other_room in dungeon.rooms:
@@ -126,17 +132,16 @@ class Mutation:
 
                 # connect new room (all possible connections)
                 chosen_connection = self.connect(open_links, new_room)
+                old_room = chosen_connection[0]
                 old_link = chosen_connection[1]
                 new_link = chosen_connection[2]
-                rotation_steps = (old_link[1] - new_link[1] + 6)/2 % 6
-                if rotation_steps < 0:
-                    rotation_steps += 6
-                new_room.rotate(rotation_steps)
-                for step in range(rotation_steps):
-                    old_coordinates = new_link[0].copy()
-                    new_link[0] = [-old_coordinates[1], -old_coordinates[2], -old_coordinates[0]]
-
-                new_connection = [chosen_connection[0], chosen_connection[1], new_room, new_link]
+                link_rotation = (old_link[3] - new_link[3] + 6)/2
+                link_rotation += dungeon.rotation[old_room]
+                link_rotation = link_rotation % 6
+                if link_rotation < 0:
+                    link_rotation += 6
+                new_connection = [old_room, chosen_connection[1], new_room, new_link]
+                new_rotation = link_rotation
 
                 # check for validity (connections)
                 if new_connection == 0:
@@ -145,6 +150,8 @@ class Mutation:
             if valid_room:
                 size += new_room.size
                 dungeon.rooms.append(new_room)
+                # add the room rotation
+                dungeon.rotation[new_room] = new_rotation
                 # add new links
                 open_links[new_room] = new_room.links
 
@@ -177,10 +184,10 @@ class Mutation:
         possible_connections = []
         # check possible connections:
         # for each room, check for all its links with this room's links whether they can connect.
-        for old_room in open_links.keys():
+        for old_room in open_links:
             for old_link in open_links[old_room]:
-                for new_link in new_room.connectors:
-                    if (old_link[1] % 2 == new_link[1] % 2) and (old_link[2] != new_link[2]):
+                for new_link in new_room.links:
+                    if (old_link[3] % 2 == new_link[3] % 2) and (old_link[4] != new_link[4]):
                         # add this as a possible connection.
                         possible_connections.append([old_room, old_link, new_link])
 

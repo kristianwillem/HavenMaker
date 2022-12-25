@@ -3,7 +3,7 @@ import uf
 
 class Dungeon:
 
-    def __init__(self, goal, rules, rooms, connections, dungeon_monsters, obstacles, traps, h_terrain, d_terrain, chests, coins, main_theme, placements, start):
+    def __init__(self, goal, rules, rooms, rotations, connections, dungeon_monsters, obstacles, traps, h_terrain, d_terrain, chests, coins, main_theme, placements, start):
         # string
         self.goal = goal
 
@@ -11,9 +11,10 @@ class Dungeon:
         self.rules = rules
 
         # list of Room objects
-        # Something to keep in mind, these rooms are already rotated.
-        # in reading the dungeon, it should copy the room classes and rotate the new ones.
         self.rooms = rooms
+
+        # dictionary (keys: room objects, values: rotations)
+        self.room_rotations = rotations
 
         # list of lists (roomA object, roomA coordinates, roomB object, roomB coordinates)
         self.connections = connections
@@ -54,37 +55,55 @@ class Dungeon:
         self.get_coordinates()
 
     def get_coordinates(self):
-        # add rooms through connections
+        # add rooms through connections (alternate way)
+        room_coordinates = {}
+        connection_coordinates = {}
+        for room in self.rooms:
+            room_rotation = self.room_rotations[room]
+            rotated_coordinates = room.rotate(room_rotation)[0]
+            room_coordinates[room] = rotated_coordinates
+        for connection in self.connections:
+            room_a = connection[0]
+            room_b = connection[2]
+            link_a = uf.link_rotate(connection[1], self.room_rotations[room_a])
+            link_b = uf.link_rotate(connection[3], self.room_rotations[room_b])
+
+            connection_coordinates[(room_a, room_b)] = [link_a, link_b]
+
         self.connection_coordinates = []
         first_room = self.rooms[0]
         used_rooms = [first_room]
-        self.coordinates = first_room.coordinates
-        unused_connections = self.connections.copy()
+        self.coordinates = room_coordinates[first_room]
+        unused_connections = []
+        for pair in connection_coordinates:
+            unused_connections.append(pair)
+
         while unused_connections:
             for connection in unused_connections:
                 connect = False
                 room_a = connection[0]
-                room_b = connection[2]
+                room_b = connection[1]
+                coordinate_pair = connection_coordinates[connection]
                 a_available = room_a in used_rooms
                 b_available = room_b in used_rooms
                 if a_available and b_available:
                     unused_connections.remove(connection)
                 elif a_available:
                     old_room = room_a
-                    old_coordinates = connection[1]
+                    old_coordinates = coordinate_pair[0]
                     new_room = room_b
-                    new_coordinates = connection[3]
+                    new_coordinates = coordinate_pair[1]
                     connect = True
                 elif b_available:
                     old_room = room_b
-                    old_coordinates = connection[3]
+                    old_coordinates = coordinate_pair[1]
                     new_room = room_a
-                    new_coordinates = connection[1]
+                    new_coordinates = coordinate_pair[0]
                     connect = True
 
                 if connect:
                     difference = uf.subtract_coordinates(old_coordinates, new_coordinates)
-                    for coordinate in new_room.coordinates:
+                    for coordinate in room_coordinates[new_room]:
                         dungeon_coordinate = uf.add_coordinates(coordinate, difference)
                         self.coordinates.append(dungeon_coordinate)
                     unused_connections.remove(connection)
@@ -94,9 +113,16 @@ class Dungeon:
                     # add difference to all other connections that come from the new room.
                     for other_connection in unused_connections:
                         if new_room == other_connection[0]:
-                            other_connection[1] = uf.add_coordinates(other_connection[1], difference)
-                        if new_room == other_connection[2]:
-                            other_connection[3] = uf.add_coordinates(other_connection[3], difference)
+                            old_connection = connection_coordinates[other_connection]
+                            new_a = uf.add_coordinates(old_connection[0], difference)
+                            new_connection = [new_a, old_connection[1]]
+                            connection_coordinates[other_connection] = new_connection
+
+                        if new_room == other_connection[1]:
+                            old_connection = connection_coordinates[other_connection]
+                            new_b = uf.add_coordinates(old_connection[1], difference)
+                            new_connection = [old_connection[0], new_b]
+                            connection_coordinates[other_connection] = new_connection
 
                     used_rooms.append(new_room)
 

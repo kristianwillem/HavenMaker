@@ -20,3 +20,13 @@ def is_adjacent(coordinate_a, coordinate_b):
         return True
     else:
         return False
+
+
+def link_rotate(link_, angle):
+    link = link_.copy()
+    for step in range(angle):
+        link_coordinates = link[0:3]
+        oc = link_coordinates
+        link[0:3] = [-oc[1], -oc[2], -oc[0]]
+        link[3] = (link[3] + 2) % 12
+    return link
