@@ -1,14 +1,12 @@
 # This file is not part of the program, and exists only to test other parts of the project.
 
-# import dungeon
-# import fitness
+from dungeon import Dungeon
 import load
-# import main
-# import monster
-# import mutation
-# import room
-# import uf
-# import validity
+from monster import Monster
+from room import Room
+from validity import check_validity
+import files.test_dungeons_file
+from output import output
 
 
 def test_rotation():
@@ -37,3 +35,82 @@ def test_rotation():
 
     if not mistake:
         print("all clear")
+
+
+def test_validity():
+    # dungeon 1 should be without problems, dungeon 2 should have overlap, dungeon 3 should have unreachable enemies
+    all_rooms = load.load_rooms()
+    all_monsters = load.load_monsters()
+    test_dungeons = load_test_dungeons(all_rooms, all_monsters)
+    test_1 = check_validity(test_dungeons[0])
+    test_2 = check_validity(test_dungeons[1])
+    test_3 = check_validity(test_dungeons[2])
+    if test_1 == False:
+        print("False Negative")
+    if test_2 == True:
+        print("False Positive: Overlap")
+    if test_3 == True:
+        print("False Positive: Reachability")
+    if test_1 == True and test_2 == False and test_3 == False:
+        print("Working as intended")
+
+
+def load_test_dungeons(all_rooms, all_monsters):
+    test_dungeons = []
+    for specific_dungeon in files.test_dungeons_file.validity_dungeons:
+        dungeon_goal = specific_dungeon["goal"]
+        dungeon_rules = specific_dungeon["rules"]
+
+        # get dungeon rooms as classes
+        raw_rooms = specific_dungeon["rooms"]
+        dungeon_rooms = []
+        dungeon_rotations = {}
+        for used_room in raw_rooms:
+            room_name = used_room[0]
+            room_side = used_room[1]
+            room_rotation = used_room[2]
+            for possible_room in all_rooms:
+                if room_name == possible_room.name and room_side == possible_room.side:
+                    dungeon_rooms.append(possible_room)
+                    dungeon_rotations[possible_room] = room_rotation
+
+        # change all connection names to their corresponding room classes
+        dungeon_connections = specific_dungeon["connections"]
+        for used_connection in dungeon_connections:
+            for connected_room in dungeon_rooms:
+                if used_connection[0] == connected_room.name:
+                    room_a = connected_room
+                if used_connection[2] == connected_room.name:
+                    room_b = connected_room
+            used_connection[0] = room_a
+            used_connection[2] = room_b
+
+        # get dungeon monsters
+        dungeon_monsters = {}
+        data_monsters = specific_dungeon["dungeon_monsters"]
+        for used_monster in data_monsters:
+            for possible_monster in all_monsters:
+                if used_monster[0] == possible_monster.name:
+                    dungeon_monsters[used_monster[0]] = [possible_monster, used_monster[1], used_monster[2]]
+
+        dungeon_obstacles = specific_dungeon["obstacles"]
+        dungeon_traps = specific_dungeon["traps"]
+        dungeon_h_terrain = specific_dungeon["hazardous terrain"]
+        dungeon_d_terrain = specific_dungeon["difficult terrain"]
+        dungeon_chests = specific_dungeon["chests"]
+        dungeon_coins = specific_dungeon["coins"]
+        dungeon_theme = specific_dungeon["main theme"]
+        dungeon_placements = specific_dungeon["placements"]
+        dungeon_start = specific_dungeon["start"]
+
+        test_dungeons.append(Dungeon(dungeon_goal, dungeon_rules, dungeon_rooms, dungeon_rotations, dungeon_connections, dungeon_monsters, dungeon_obstacles, dungeon_traps, dungeon_h_terrain, dungeon_d_terrain, dungeon_chests, dungeon_coins, dungeon_theme, dungeon_placements, dungeon_start))
+    return test_dungeons
+
+
+def test_output():
+    all_rooms = load.load_rooms()
+    all_monsters = load.load_monsters()
+    all_dungeons = load.load_dungeon(all_rooms, all_monsters)
+    output(all_dungeons[0])
+
+

@@ -1,7 +1,7 @@
 from dungeon import Dungeon
 from room import Room
 from monster import Monster
-import copy
+from output import output
 
 import files.chests_file
 import files.dungeons_file

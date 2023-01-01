@@ -4,6 +4,7 @@ from fitness import Fitness
 from validity import check_validity
 import random
 import load
+import output
 
 
 def generate():
@@ -11,7 +12,7 @@ def generate():
     # Initialize
     # This part loads all the necessary data for the program to function.
     # load rules, rooms, monsters
-    cycles = 1
+    cycles = 20
     all_rules = load.load_rules()
     all_rooms = load.load_rooms()
     all_monsters = load.load_monsters()
@@ -45,7 +46,7 @@ def generate():
     for iteration in range(cycles):
         parents = select_parents(population)
         new_dungeon = crossover(parents)
-        new_dungeon = mutation.mutate(new_dungeon)
+        mutation.mutate(new_dungeon)
         fix(new_dungeon)
         valid = check_validity(new_dungeon)
         if valid:
@@ -66,6 +67,7 @@ def select_parent(possible_parents):
     total_score = 0
     for entry in possible_parents:
         # this is a quick and dirty solution. It might be better to improve this at some time.
+        # possible cleaner solution uses "random.uniform" (the float variant of randrange)
         total_score += round(entry[1]*100)
     chosen_score = random.randrange(0, total_score)
     for entry in possible_parents:
@@ -94,7 +96,7 @@ def crossover(parents):
     new_chests = parents[crossover_list[4]].chests
     new_coins = parents[crossover_list[4]].coins
 
-    new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_rotations, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_coins, new_chests, new_theme, new_placements, new_start)
+    new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_rotations, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_chests, new_coins, new_theme, new_placements, new_start)
     return new_dungeon
 
 

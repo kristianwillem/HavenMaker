@@ -112,6 +112,7 @@ class Mutation:
     def mutate_map(self, dungeon):
         # room & connection randomization
         dungeon.rooms = []
+        dungeon.connections = []
         open_links = dict()
         size = 0
         mutate_loop = True
@@ -132,28 +133,27 @@ class Mutation:
 
                 # connect new room (all possible connections)
                 chosen_connection = self.connect(open_links, new_room)
-                old_room = chosen_connection[0]
-                old_link = chosen_connection[1]
-                new_link = chosen_connection[2]
-                link_rotation = (old_link[3] - new_link[3] + 6)/2
-                link_rotation += dungeon.rotation[old_room]
-                link_rotation = link_rotation % 6
-                if link_rotation < 0:
-                    link_rotation += 6
-                new_connection = [old_room, chosen_connection[1], new_room, new_link]
-                new_rotation = link_rotation
-
-                # check for validity (connections)
-                if new_connection == 0:
+                if chosen_connection:
+                    old_room = chosen_connection[0]
+                    old_link = chosen_connection[1]
+                    new_link = chosen_connection[2]
+                    link_rotation = (old_link[3] - new_link[3] + 6)/2
+                    link_rotation += dungeon.room_rotations[old_room]
+                    link_rotation = link_rotation % 6
+                    if link_rotation < 0:
+                        link_rotation += 6
+                    new_connection = [old_room, chosen_connection[1], new_room, new_link]
+                    new_rotation = int(link_rotation)
+                else:
                     valid_room = False
 
             if valid_room:
-                size += new_room.size
+                size += new_room.hexes
                 dungeon.rooms.append(new_room)
                 # add the room rotation
-                dungeon.rotation[new_room] = new_rotation
+                dungeon.room_rotations[new_room] = new_rotation
                 # add new links
-                open_links[new_room] = new_room.links
+                open_links[new_room] = new_room.links.copy()
 
                 if new_connection:
                     # remove connector link of the old room
@@ -190,7 +190,6 @@ class Mutation:
                     if (old_link[3] % 2 == new_link[3] % 2) and (old_link[4] != new_link[4]):
                         # add this as a possible connection.
                         possible_connections.append([old_room, old_link, new_link])
-
         if not possible_connections:
             return 0
         else:
@@ -198,7 +197,8 @@ class Mutation:
             return chosen_connection
 
     def mutate_placement(self, dungeon):
-        possible_coordinates = dungeon.get_coordinates().copy()
+        dungeon.get_coordinates()
+        possible_coordinates = dungeon.coordinates.copy()
 
         dungeon.start = 4
         looking_for_start = True
@@ -211,7 +211,7 @@ class Mutation:
             if len(other_starts) < 6:
                 looking_for_start = False
 
-        certain_starts = random_start
+        certain_starts = [random_start]
 
         # while we don't have enough start locations, get more.
         while len(other_starts) + len(certain_starts) < dungeon.start:
@@ -222,8 +222,12 @@ class Mutation:
                 if uf.is_adjacent(extra_start, other) and other not in other_starts and other not in certain_starts:
                     other_starts.append(other)
 
-        all_starts = certain_starts.extend(random.choices(other_starts, k=(dungeon.start - len(certain_starts))))
-        dungeon.placement["start"] = all_starts
+        all_starts = certain_starts
+        for i in range(dungeon.start - len(certain_starts)):
+            extra_start = random.choice(other_starts)
+            other_starts.remove(extra_start)
+            all_starts.append(extra_start)
+        dungeon.placements["start"] = all_starts
 
         # remove the starts from the possible coordinates
         for used_coordinate in all_starts:
@@ -248,9 +252,11 @@ class Mutation:
             if entry != "start":
                 component_count = components[entry]
                 # get a number of random available coordinates equal to the component count
-                new_coordinates = random.choices(possible_coordinates, k=component_count)
+                # then remove them from the available list
+                # new_coordinates = random.choices(possible_coordinates, k=component_count)
+                new_coordinates = []
+                for i in range(component_count):
+                    chosen_coordinate = random.choice(possible_coordinates)
+                    possible_coordinates.remove(chosen_coordinate)
+                    new_coordinates.append(chosen_coordinate)
                 dungeon.placements[entry] = new_coordinates
-
-                # remove the coordinates from the available list
-                for used_coordinate in new_coordinates:
-                    possible_coordinates.remove(used_coordinate)
