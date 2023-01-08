@@ -16,6 +16,7 @@ class Mutation:
         self.rule_chance_base = 0.8
         self.chest_chance_base = 0.8
         self.monster_theme_bias = 2
+        self.room_theme_bias = 4
 
         # probably at 0.5 or so
         self.mutation_chance = 0.75
@@ -103,7 +104,6 @@ class Mutation:
 
         # grab new monsters, add one normal of each.
         current_difficulty = 0
-        lowest_difficulty = 10
         new_dungeon_monsters = []
         monster_type_list = []
         for i in range(new_number):
@@ -124,8 +124,6 @@ class Mutation:
                     new_monster_type = random.choices(self.all_monsters, theme_weight)[0]
             # do the basics
             current_difficulty += new_monster_type.difficulty
-            if new_monster_type.difficulty < lowest_difficulty:
-                lowest_difficulty = new_monster_type.difficulty
             new_monster = [new_monster_type, 1, 0]
             monster_type_list.append(new_monster_type)
             new_dungeon_monsters.append(new_monster)
@@ -190,6 +188,7 @@ class Mutation:
     def mutate_map(self, dungeon):
         # room & connection randomization
         dungeon.rooms = []
+        dungeon.theme = "None"
         dungeon.room_rotations.clear()
         dungeon.connections = []
         open_links = dict()
@@ -197,7 +196,13 @@ class Mutation:
         mutate_loop = True
         while mutate_loop:
             # select random room
-            new_room = random.choice(self.all_rooms)
+            theme_weight = []
+            for entry in self.all_rooms:
+                if entry.theme == dungeon.theme:
+                    theme_weight.append(self.room_theme_bias)
+                else:
+                    theme_weight.append(1)
+            new_room = random.choices(self.all_rooms, theme_weight)[0]
             valid_room = True
 
             if not dungeon.rooms:
