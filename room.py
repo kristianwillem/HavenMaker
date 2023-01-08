@@ -25,11 +25,12 @@ class Room:
                 oc = rotated_coordinates[i]
                 coordinate = [-oc[1], -oc[2], -oc[0]]
                 rotated_coordinates[i] = coordinate
-            for link in rotated_links:
-                link_coordinates = link[0:3]
-                oc = link_coordinates
-                link[0:3] = [-oc[1], -oc[2], -oc[0]]
-                link[3] = (link[3]+2) % 12
+            for i in range(len(rotated_links)):
+                link = rotated_links[i]
+                oc = link[0:3]
+                link_direction = (link[3]+2) % 12
+                link_type = link[4]
+                rotated_links[i] = [-oc[1], -oc[2], -oc[0], link_direction, link_type]
         return rotated_coordinates, rotated_links
 
     def __hash__(self):

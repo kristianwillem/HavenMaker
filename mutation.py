@@ -1,5 +1,6 @@
 import random
 import uf
+import validity
 
 
 class Mutation:
@@ -16,16 +17,38 @@ class Mutation:
         self.chest_chance_base = 0.8
         self.monster_theme_bias = 2
 
+        # probably at 0.5 or so
+        self.mutation_chance = 0.75
+        self.ensure_proper_map = True
+
     def mutate(self, dungeon):
-        # use random(choices) to randomize this
-        self.mutate_rules(dungeon)
-        self.mutate_monsters(dungeon)
-        self.mutate_environment(dungeon)
-        self.mutate_treasure(dungeon)
+        # randomly mutate, each mutation has a 25% chance to apply.
+        random_mutations = []
+        for i in range(5):
+            if random.random() < self.mutation_chance:
+                random_mutations.append(True)
+            else:
+                random_mutations.append(False)
+
+        if random_mutations[0]:
+            self.mutate_rules(dungeon)
+        if random_mutations[1]:
+            self.mutate_monsters(dungeon)
+        if random_mutations[2]:
+            self.mutate_environment(dungeon)
+        if random_mutations[3]:
+            self.mutate_treasure(dungeon)
 
         # While it is usually at another place, I've moved the map mutation to the bottom since it also mutates the
         # "Placement" attribute, which depends on all other attributes.
-        self.mutate_map(dungeon)
+        if random_mutations[4]:
+            self.mutate_map(dungeon)
+
+        if self.ensure_proper_map:
+            proper_map = validity.overlap_check(dungeon)
+            while not proper_map:
+                self.mutate_map(dungeon)
+                proper_map = validity.overlap_check(dungeon)
 
     # for a more advanced (non-MVP) version:
     # gaussian distribution with the ideal as mean and a (variable) standard deviation.
@@ -45,29 +68,84 @@ class Mutation:
                 mutate_loop = False
 
     def mutate_monsters(self, dungeon):
-        for monster in dungeon.monsters:
-            old_monster = dungeon.monsters[monster]
-            monster_type = old_monster[0]
-            normal_amount = old_monster[1]
-            elite_amount = old_monster[2]
+        # get monster_difficulty (total difficulty of all monsters) and monster_number (number of different monsters)
+        # remove old dictionary
+        # choose new (biased) monster_difficulty and monster_number. (difficulty should not change too much)
+        # (min monster_number to 2)
+        # choose a new monster (randomly)
+        # choose a number of new monsters with bias to first monster's type.
+        # divide the difficulty to choose new monsters
+        # rebuild the dungeon.monster dictionary
 
-            # create a list of monsters & themes for weighted random
-            theme_weight = []
-            for entry in self.all_monsters:
-                if entry.theme == monster_type.theme:
-                    theme_weight.append(self.monster_theme_bias)
-                else:
-                    theme_weight.append(1)
-            new_monster_type = random.choices(self.all_monsters, theme_weight)[0]
+        monster_difficulty = 0
+        for monster_type in dungeon.monsters:
+            monster_data = dungeon.monsters[monster_type]
+            monster_class = monster_data[0]
+            monster_amounts = [monster_data[1], monster_data[2]]
+            monster_difficulty += monster_class.difficulty * (monster_amounts[0] + 2 * monster_amounts[1])
+        monster_number = len(dungeon.monsters)
 
-            # add other necessary components. For the slightly more than MVP, use randomization for this.
+        dungeon.monsters = dict()
 
-            difficulty_ratio = monster_type.difficulty/new_monster_type.difficulty
-            new_normal_amount = round(normal_amount * difficulty_ratio)
-            new_elite_amount = round(elite_amount * difficulty_ratio)
+        # randomize difficulty
+        mu = monster_difficulty
+        sigma = monster_difficulty / 8
+        new_difficulty = round(random.normalvariate(mu, sigma))
+        if new_difficulty < 10:
+            new_difficulty = 10
 
-            new_monster = [new_monster_type, new_normal_amount, new_elite_amount]
-            dungeon.monsters[monster] = new_monster
+        # randomize numbers
+        mu = monster_number
+        sigma = monster_number / 4
+        new_number = round(random.normalvariate(mu, sigma))
+        if new_number < 2:
+            new_number = 2
+
+        # grab new monsters, add one normal of each.
+        current_difficulty = 0
+        lowest_difficulty = 10
+        new_dungeon_monsters = []
+        monster_type_list = []
+        for i in range(new_number):
+            if i == 0:
+                # choose first monster
+                new_monster_type = random.choice(self.all_monsters)
+                dungeon_monster_theme = new_monster_type.theme
+            else:
+                # choose additional monsters
+                theme_weight = []
+                for entry in self.all_monsters:
+                    if entry.theme == dungeon_monster_theme:
+                        theme_weight.append(self.monster_theme_bias)
+                    else:
+                        theme_weight.append(1)
+                new_monster_type = 0
+                while new_monster_type in monster_type_list or new_monster_type == 0:
+                    new_monster_type = random.choices(self.all_monsters, theme_weight)[0]
+            # do the basics
+            current_difficulty += new_monster_type.difficulty
+            if new_monster_type.difficulty < lowest_difficulty:
+                lowest_difficulty = new_monster_type.difficulty
+            new_monster = [new_monster_type, 1, 0]
+            monster_type_list.append(new_monster_type)
+            new_dungeon_monsters.append(new_monster)
+
+        while current_difficulty < new_difficulty:
+            # choose a random monster
+            # 50/50 chance of; adding a normal or changing a normal into an elite (if any normal are present)
+            added_monster = random.choice(new_dungeon_monsters)
+            add_elite = random.randint(0, 1)
+            if add_elite == 1 and added_monster[1] > 0:
+                added_monster[1] = added_monster[1] - 1
+                added_monster[2] = added_monster[2] + 1
+            else:
+                added_monster[1] = added_monster[1] + 1
+            current_difficulty += added_monster[0].difficulty
+
+        for monster_entry in new_dungeon_monsters:
+            monster_class = monster_entry[0]
+            monster_name = monster_class.name
+            dungeon.monsters[monster_name] = monster_entry
 
     def mutate_environment(self, dungeon):
         # using gaussian to create a 95% chance that the new number will be between 0.5 and 1.5 times the original.
@@ -112,6 +190,7 @@ class Mutation:
     def mutate_map(self, dungeon):
         # room & connection randomization
         dungeon.rooms = []
+        dungeon.room_rotations.clear()
         dungeon.connections = []
         open_links = dict()
         size = 0
@@ -138,12 +217,12 @@ class Mutation:
                     old_link = chosen_connection[1]
                     new_link = chosen_connection[2]
                     link_rotation = (old_link[3] - new_link[3] + 6)/2
-                    link_rotation += dungeon.room_rotations[old_room]
                     link_rotation = link_rotation % 6
                     if link_rotation < 0:
                         link_rotation += 6
-                    new_connection = [old_room, chosen_connection[1], new_room, new_link]
                     new_rotation = int(link_rotation)
+                    new_link = uf.link_rotate(new_link, new_rotation)
+                    new_connection = [old_room, old_link, new_room, new_link]
                 else:
                     valid_room = False
 
@@ -152,8 +231,13 @@ class Mutation:
                 dungeon.rooms.append(new_room)
                 # add the room rotation
                 dungeon.room_rotations[new_room] = new_rotation
-                # add new links
-                open_links[new_room] = new_room.links.copy()
+                # add and rotate new links
+                new_links = new_room.links.copy()
+                rotated_links = []
+                for link in new_links:
+                    rotated_link = uf.link_rotate(link, new_rotation)
+                    rotated_links.append(rotated_link)
+                open_links[new_room] = rotated_links
 
                 if new_connection:
                     # remove connector link of the old room
@@ -197,6 +281,7 @@ class Mutation:
             return chosen_connection
 
     def mutate_placement(self, dungeon):
+        dungeon.placements = dict()
         dungeon.get_coordinates()
         possible_coordinates = dungeon.coordinates.copy()
 
@@ -248,15 +333,15 @@ class Mutation:
         components["chests"] = len(dungeon.chests)
         components["coins"] = dungeon.coins
 
-        for entry in dungeon.placements:
-            if entry != "start":
-                component_count = components[entry]
-                # get a number of random available coordinates equal to the component count
-                # then remove them from the available list
-                # new_coordinates = random.choices(possible_coordinates, k=component_count)
-                new_coordinates = []
-                for i in range(component_count):
-                    chosen_coordinate = random.choice(possible_coordinates)
-                    possible_coordinates.remove(chosen_coordinate)
-                    new_coordinates.append(chosen_coordinate)
-                dungeon.placements[entry] = new_coordinates
+        entry_list = ["monsters", "obstacles", "traps", "hazardous terrain", "difficult terrain", "chests", "coins"]
+        for entry in entry_list:
+            component_count = components[entry]
+            # get a number of random available coordinates equal to the component count
+            # then remove them from the available list
+            # new_coordinates = random.choices(possible_coordinates, k=component_count)
+            new_coordinates = []
+            for i in range(component_count):
+                chosen_coordinate = random.choice(possible_coordinates)
+                possible_coordinates.remove(chosen_coordinate)
+                new_coordinates.append(chosen_coordinate)
+            dungeon.placements[entry] = new_coordinates

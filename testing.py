@@ -7,6 +7,7 @@ from room import Room
 from validity import check_validity
 import files.test_dungeons_file
 from output import output
+import uf
 
 
 def test_rotation():
@@ -114,3 +115,42 @@ def test_output():
     output(all_dungeons[0])
 
 
+def test_coordinates():
+    all_rooms = load.load_rooms()
+    all_monsters = load.load_monsters()
+    all_dungeons = load.load_dungeon(all_rooms, all_monsters)
+    black_barrow = all_dungeons[0]
+    black_barrow.get_coordinates()
+    coordinates = black_barrow.coordinates.copy()
+    # print(coordinates)
+    print(black_barrow.connection_coordinates)
+    for coordinate in coordinates:
+        if black_barrow.coordinates.count(coordinate) > 1:
+            print(coordinate)
+
+
+def test_validity_extended():
+    all_rooms = load.load_rooms()
+    all_monsters = load.load_monsters()
+    all_dungeons = load.load_dungeon(all_rooms, all_monsters)
+    validity_list = []
+    for dungeon in all_dungeons:
+        validity_test = check_validity(dungeon)
+        validity_list.append(validity_test)
+        print("one done")
+    print(validity_list)
+
+
+def test_rooms():
+    test_rooms = load.load_rooms()
+    for every_room in test_rooms:
+        for every_coordinate in every_room.coordinates:
+            room_sum = every_coordinate[0] + every_coordinate[1] + every_coordinate[2]
+            if room_sum != 0:
+                print("specific coordinate")
+                print(every_room.name)
+            if every_room.coordinates.count(every_coordinate) > 1:
+                print("coordinate doubles")
+                print(every_room.name)
+
+# test_validity_extended()

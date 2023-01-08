@@ -24,18 +24,18 @@ def output(dungeon):
     if dungeon.obstacles > 0:
         print("place obstacles at " + str(place["obstacles"]))
     if dungeon.traps > 0:
-        print("place traps terrain at " + str(place["traps"]))
+        print("place traps at " + str(place["traps"]))
     if dungeon.h_terrain > 0:
-        print("place hazardous terrain at " + str(place["h_terrain"]))
+        print("place hazardous terrain at " + str(place["hazardous terrain"]))
     if dungeon.h_terrain > 0:
-        print("place difficult terrain at " + str(place["d_terrain"]))
+        print("place difficult terrain at " + str(place["difficult terrain"]))
     if dungeon.coins > 0:
         print("place coins at " + str(place["coins"]))
 
     if len(dungeon.chests) > 0:
         for content in dungeon.chests:
             location = place["chests"].pop(0)
-            print("place a chest containing " + str(content) + " at " + str(location))
+            print("place a chest containing '" + str(content) + "' at " + str(location))
 
     for monster_type in dungeon.monsters:
         monster_data = dungeon.monsters[monster_type]
