@@ -11,7 +11,8 @@ class Fitness:
         # there is no ideal for theme since more coherent is always better.
         # difficulty between 30 and 36 according to Isaac Childres
         # That value is halved for 2 players, but doubled for the difficulty system used.
-        self.difficulty_ideal = 32
+        # value is set to 28 since the first dungeon only has a difficulty of 24.
+        self.difficulty_ideal = 28
         self.size_ideal = 90
         self.complexity_ideal = 1
         self.clutter_ideal = 0.344

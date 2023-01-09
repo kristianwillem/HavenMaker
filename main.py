@@ -57,12 +57,14 @@ def generate():
     for initial in initial_dungeons:
         population.remove(initial)
 
-    # to do list: introduce sort in dungeon class to do this properly.
-    best_dungeon = population[0]
-    for final_dungeon in population:
-        if final_dungeon.score>best_dungeon.score:
-            best_dungeon = final_dungeon
-    output(best_dungeon)
+    # sort the list and output the top three dungeons (in ascending order)
+    population.sort()
+    print("\n")
+    output(population[-3])
+    print("\n")
+    output(population[-2])
+    print("\n")
+    output(population[-1])
 
 
 def select_parents(possible_parents):

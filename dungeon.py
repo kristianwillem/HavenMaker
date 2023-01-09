@@ -142,3 +142,6 @@ class Dungeon:
         # if they both are, remove the connection
         # if only one is, get the coordinates of the other and remove the room from the list.
         # coordinates can be calculated with: add to each coordinate (old room connection - new room connection)
+
+    def __gt__(self, other):
+        return self.score > other.score
