@@ -8,11 +8,10 @@ from output import output
 
 
 def generate():
-
+    cycles = 20
     # Initialize
     # This part loads all the necessary data for the program to function.
-    # load rules, rooms, monsters
-    cycles = 10
+    # load rules, rooms, monsters, and chests
     all_rules = load.load_rules()
     all_rooms = load.load_rooms()
     all_monsters = load.load_monsters()
@@ -66,6 +65,10 @@ def generate():
     print("\n")
     output(population[-1])
 
+    print("\n")
+    print(population[0].score)
+    print(population[-1].score)
+
 
 def select_parents(possible_parents):
     parent_1 = 0
@@ -77,15 +80,23 @@ def select_parents(possible_parents):
 
 
 def select_parent(possible_parents):
+    # number between 0 and 1 to offset the minimum fitness score.
+    selection_bias = 0.5
     total_score = 0
+    # determine lowest score
+    lowest_score = 100
+    for dungeon in possible_parents:
+        if dungeon.score < lowest_score:
+            lowest_score = dungeon.score
+
     for dungeon in possible_parents:
         # this is a quick and dirty solution. It might be better to improve this at some time.
         # possible cleaner solution uses "random.uniform" (the float variant of randrange)
-        total_score += round(dungeon.score*100)
-    chosen_score = random.randrange(0, total_score)
+        total_score += (dungeon.score - lowest_score * selection_bias)
+    chosen_score = random.uniform(0, total_score)
     for dungeon in possible_parents:
-        chosen_score -= round(dungeon.score*100)
-        if chosen_score << 0:
+        chosen_score -= (dungeon.score - lowest_score * selection_bias)
+        if chosen_score < 0:
             return dungeon
 
 
@@ -158,7 +169,9 @@ def fix(dungeon, all_chests):
             added_coordinates = []
             for i in range(placement_add):
                 # add a random empty coordinate
-                added_coordinates.append(random.choice(available_coordinates))
+                new_coordinate = random.choice(available_coordinates)
+                added_coordinates.append(new_coordinate)
+                available_coordinates.remove(new_coordinate)
             new_entry = old_placement[entry]
             new_entry.extend(added_coordinates)
 

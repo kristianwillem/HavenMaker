@@ -35,6 +35,8 @@ def reachability_check(dungeon):
     coordinates.extend(dungeon.connection_coordinates)
     if len(dungeon.placements["obstacles"]) != 0:
         for obstacle_hex in dungeon.placements["obstacles"]:
+            if obstacle_hex not in coordinates:
+                pass
             coordinates.remove(obstacle_hex)
     # do the actual search
     for start in start_locations:
