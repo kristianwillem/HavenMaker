@@ -25,7 +25,15 @@ class Fitness:
         theme = self.theme_fitness(dungeon)
         clutter = self.clutter_fitness(dungeon)
         total_fitness = self.difficulty_weight * difficulty + self.size_weight * size + self.complexity_weight * complexity + self.theme_weight * theme + self.clutter_weight * clutter
-        return total_fitness
+        all_scores = {
+            "difficulty": difficulty,
+            "size": size,
+            "complexity": complexity,
+            "theme" : theme,
+            "clutter": clutter,
+            "total score": total_fitness
+        }
+        return all_scores
 
     def difficulty_fitness(self, dungeon):
         difficulty_number = 0

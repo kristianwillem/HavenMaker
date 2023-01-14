@@ -9,6 +9,7 @@ from output import output
 
 def generate():
     cycles = 20
+    output_test_dungeons = True
     # Initialize
     # This part loads all the necessary data for the program to function.
     # load rules, rooms, monsters, and chests
@@ -22,8 +23,9 @@ def generate():
     population = []
     initial_dungeons = load.load_dungeon(all_rooms, all_monsters)
     for specific_dungeon in initial_dungeons:
-        fitness = ff.apply_fitness(specific_dungeon)
-        specific_dungeon.score = fitness
+        fitness_scores = ff.apply_fitness(specific_dungeon)
+        specific_dungeon.specific_scores = fitness_scores
+        specific_dungeon.score = fitness_scores["total score"]
         population.append(specific_dungeon)
 
     sizes = []
@@ -49,25 +51,36 @@ def generate():
         fix(new_dungeon, all_chests)
         valid = check_validity(new_dungeon)
         if valid:
-            fitness = ff.apply_fitness(new_dungeon)
-            new_dungeon.score = fitness
+            fitness_scores = ff.apply_fitness(new_dungeon)
+            new_dungeon.specific_scores = fitness_scores
+            new_dungeon.score = fitness_scores["total score"]
             population.append(new_dungeon)
 
     for initial in initial_dungeons:
         population.remove(initial)
 
-    # sort the list and output the top three dungeons (in ascending order)
-    population.sort()
-    print("\n")
-    output(population[-3])
-    print("\n")
-    output(population[-2])
-    print("\n")
-    output(population[-1])
+    if output_test_dungeons:
+        # in outputting test dungeons, the highest dungeon should be the output, and the different scores for the
+        # dungeon, (as well as their total score), should be output as well.
+        population.sort()
+        best_dungeon = population[-1]
+        output(best_dungeon)
+        print("\n")
+        print(best_dungeon.specific_scores)
 
-    print("\n")
-    print(population[0].score)
-    print(population[-1].score)
+    else:
+        # sort the list and output the top three dungeons (in ascending order)
+        population.sort()
+        print("\n")
+        output(population[-3])
+        print("\n")
+        output(population[-2])
+        print("\n")
+        output(population[-1])
+
+        print("\n")
+        print(population[0].score)
+        print(population[-1].score)
 
 
 def select_parents(possible_parents):

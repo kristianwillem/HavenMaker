@@ -58,6 +58,8 @@ class Dungeon:
         # dungeon fitness score
         self.score = 0
 
+        self.specific_scores = dict()
+
     def get_coordinates(self):
         # add rooms through connections (alternate way)
         room_coordinates = dict()
