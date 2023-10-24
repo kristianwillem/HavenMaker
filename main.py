@@ -8,21 +8,30 @@ from output import output
 
 
 def generate():
-    cycles = 20
+    cycles = 200
     output_test_dungeons = True
+    player_count = 3
+
+    # this part is used to choose what games to include. Because of how the generator works at the moment, Gloomhaven
+    # should always be set to be included.
+    include_gloomhaven = True
+    include_frosthaven = True
+    inclusion = [include_gloomhaven, include_frosthaven]
+
     # Initialize
     # This part loads all the necessary data for the program to function.
     # load rules, rooms, monsters, and chests
     all_rules = load.load_rules()
-    all_rooms = load.load_rooms()
-    all_monsters = load.load_monsters()
+    all_rooms = load.load_rooms(inclusion)
+    all_monsters = load.load_monsters(inclusion)
     all_chests = load.load_chests()
-    ff = Fitness()
+    ff = Fitness(player_count)
 
     # load Dungeons
     population = []
     initial_dungeons = load.load_dungeon(all_rooms, all_monsters)
     for specific_dungeon in initial_dungeons:
+        specific_dungeon.initial = True
         fitness_scores = ff.apply_fitness(specific_dungeon)
         specific_dungeon.specific_scores = fitness_scores
         specific_dungeon.score = fitness_scores["total score"]
@@ -40,7 +49,7 @@ def generate():
 
     # initialize mutation
     # Mutation should be initialized after the Dungeons since min_size/max_size depends on it.
-    mutation = Mutation(all_rules, all_rooms, all_monsters, all_chests, min_size, max_size)
+    mutation = Mutation(all_rules, all_rooms, all_monsters, all_chests, min_size, max_size, player_count)
 
     # Evolutionary Loop
     # This part runs the evolutionary cycle.
@@ -49,7 +58,7 @@ def generate():
         new_dungeon = crossover(parents)
         mutation.mutate(new_dungeon)
         fix(new_dungeon, all_chests)
-        valid = check_validity(new_dungeon)
+        valid = check_validity(new_dungeon, inclusion)
         if valid:
             fitness_scores = ff.apply_fitness(new_dungeon)
             new_dungeon.specific_scores = fitness_scores
@@ -134,6 +143,8 @@ def crossover(parents):
     new_coins = parents[crossover_list[4]].coins
 
     new_dungeon = Dungeon(new_goal, new_rules, new_rooms, new_rotations, new_connections, new_monsters, new_obstacles, new_traps, new_h_terrain, new_d_terrain, new_chests, new_coins, new_theme, new_placements, new_start)
+    if parents[0].initial is True or parents[1].initial is True:
+        new_dungeon.first_gen = True
     return new_dungeon
 
 

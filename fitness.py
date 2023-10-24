@@ -1,7 +1,9 @@
 import math
 
+
 class Fitness:
-    def __init__(self):
+    def __init__(self, player_count):
+        # Default weights: difficulty = 4, size = 1, complexity = 1, theme = 2, clutter = 2
         self.difficulty_weight = 4
         self.size_weight = 1
         self.complexity_weight = 1
@@ -11,11 +13,12 @@ class Fitness:
         # there is no ideal for theme since more coherent is always better.
         # difficulty between 30 and 36 according to Isaac Childres
         # That value is halved for 2 players, but doubled for the difficulty system used.
-        # value is set to 28 since the first dungeon only has a difficulty of 24.
-        self.difficulty_ideal = 28
+        # The ideal values for size and clutter are the average taken from the dungeons in the initial population.
+        # Default ideals: difficulty = 16 * player_count, size = 90, complexity = 1, clutter = 0.344
+        self.difficulty_ideal = 16 * player_count
         self.size_ideal = 90
         self.complexity_ideal = 1
-        self.clutter_ideal = 0.344
+        self.clutter_ideal = 0.4
         # last one should be a number between 0 and 1
 
     def apply_fitness(self, dungeon):

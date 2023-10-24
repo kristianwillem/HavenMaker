@@ -60,8 +60,12 @@ class Dungeon:
 
         self.specific_scores = dict()
 
+        # whether it's an initial dungeon or not
+        self.initial = False
+        self.first_gen = False
+
     def get_coordinates(self):
-        # add rooms through connections (alternate way)
+        # add rooms through connections
         room_coordinates = dict()
         connection_references = dict()
         for room in self.rooms:
@@ -71,9 +75,6 @@ class Dungeon:
         for connection in self.connections:
             room_a = connection[0]
             room_b = connection[2]
-            # remove this; connections are already rotated.
-            # link_a = uf.link_rotate(connection[1], self.room_rotations[room_a])
-            # link_b = uf.link_rotate(connection[3], self.room_rotations[room_b])
             link_a = connection[1]
             link_b = connection[3]
 

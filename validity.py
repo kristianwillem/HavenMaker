@@ -1,17 +1,20 @@
 import uf
 
 
-def check_validity(dungeon):
+def check_validity(dungeon, inclusion):
     overlap = overlap_check(dungeon)
     reachable = reachability_check(dungeon)
-    limited = limited_check(dungeon)
+    limited = limited_check(dungeon, inclusion)
+    monster_limited = monster_limit_check(dungeon)
     if not overlap:
         print("invalid: overlap")
     if not reachable:
         print("invalid: reachability (goal)")
     if not limited:
         print("invalid: too many components")
-    if not overlap or not reachable or not limited:
+    if not monster_limited:
+        print("invalid: too many monsters")
+    if not overlap or not reachable or not limited or not monster_limited:
         return False
     else:
         return True
@@ -35,8 +38,6 @@ def reachability_check(dungeon):
     coordinates.extend(dungeon.connection_coordinates)
     if len(dungeon.placements["obstacles"]) != 0:
         for obstacle_hex in dungeon.placements["obstacles"]:
-            if obstacle_hex not in coordinates:
-                pass
             coordinates.remove(obstacle_hex)
     # do the actual search
     for start in start_locations:
@@ -82,38 +83,55 @@ def search(coordinates, start, finish):
     # if next_nodes is empty, return false.
 
 
-def limited_check(dungeon):
+def limited_check(dungeon, inclusion):
     limited = True
+    obstacle_limit = 95
+    h_terrain_limit = 12
+    d_terrain_limit = 40
+    door_limit = 26
+    trap_limit = 18
+
+    if inclusion[1]:
+        obstacle_limit += 116
+        h_terrain_limit += 22
+        d_terrain_limit += 54
+        door_limit += 19
+        trap_limit += 18
 
     if dungeon.coins > 40:
         limited = False
     if len(dungeon.chests) > 6:
         limited = False
-    if len(dungeon.connection_coordinates) > 26:
+    if len(dungeon.connection_coordinates) > door_limit:
         limited = False
-    if dungeon.traps > 18:
+    if dungeon.traps > trap_limit:
         limited = False
 
     obstacles = dungeon.obstacles
     h_terrain = dungeon.h_terrain
     d_terrain = dungeon.d_terrain
 
-    if obstacles > 101:
+    if obstacles > obstacle_limit:
         limited = False
-    if h_terrain > 12:
+    if h_terrain > h_terrain_limit:
         limited = False
-    if d_terrain > 34:
+    if d_terrain > d_terrain_limit:
         limited = False
 
+# this isn't quite correct anymore with Frosthaven
     if obstacles + d_terrain > 111:
         limited = False
-    if obstacles + h_terrain > 106:
+    if obstacles + h_terrain > 100:
         limited = False
-    if d_terrain + h_terrain > 42:
+    if d_terrain + h_terrain > 48:
         limited = False
     if obstacles + d_terrain + h_terrain > 112:
         limited = False
+    return limited
 
+
+def monster_limit_check(dungeon):
+    monster_limited = True
     for monster_type in dungeon.monsters:
         monster_count = 0
         monster_data = dungeon.monsters[monster_type]
@@ -121,5 +139,6 @@ def limited_check(dungeon):
         monster_count += monster_data[1]
         monster_count += monster_data[2]
         if monster_count > monster_class.max_amount:
-            limited = False
-    return limited
+            # print(monster_class.name + " " + str(monster_count))
+            monster_limited = False
+    return monster_limited

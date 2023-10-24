@@ -27,7 +27,7 @@ def output(dungeon):
         print("place traps at " + str(place["traps"]))
     if dungeon.h_terrain > 0:
         print("place hazardous terrain at " + str(place["hazardous terrain"]))
-    if dungeon.h_terrain > 0:
+    if dungeon.d_terrain > 0:
         print("place difficult terrain at " + str(place["difficult terrain"]))
     if dungeon.coins > 0:
         print("place coins at " + str(place["coins"]))

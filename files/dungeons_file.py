@@ -46,7 +46,7 @@ black_barrow = {
     "rules": [],
     "rooms": [["L1", "a", 3], ["G1", "b", 0], ["I1", "a", 3]],
     "connections": [["L1", [2, -3, 1, 3, "exit"], "G1", [-1, 1, 0, 9, "entry"]], ["G1", [4, -1, -3, 0, "exit"], "I1", [-3, 1, 2, 6, "entry"]]],
-    "dungeon_monsters": [["Bandit Guard", 4, 1], ["Bandit Archer", 2, 1], ["Living Bones", 0, 2]],
+    "dungeon_monsters": [["Bandit Guard", 4, 1], ["Bandit Archer", 2, 1], ["Living Bones", 2, 0]],
     "obstacles": 4,
     "traps": 2,
     "hazardous terrain": 0,

@@ -5,13 +5,14 @@ import validity
 
 class Mutation:
 
-    def __init__(self, all_rules, all_rooms, all_monsters, all_chests, min_size, max_size):
+    def __init__(self, all_rules, all_rooms, all_monsters, all_chests, min_size, max_size, player_count):
         self.all_rules = all_rules
         self.all_rooms = all_rooms
         self.all_monsters = all_monsters
         self.all_chests = all_chests
         self.min_size = min_size
         self.max_size = max_size
+        self.player_count = player_count
 
         self.rule_chance_base = 0.8
         self.chest_chance_base = 0.8
@@ -21,15 +22,22 @@ class Mutation:
         # probably at 0.5 or so
         self.mutation_chance = 0.75
         self.ensure_proper_map = True
+        self.ensure_proper_monsters = True
+
+        # option to prevent single-tiles of specific terrain. Set to 0 if not used.
+        self.tile_minimum = 4
 
     def mutate(self, dungeon):
-        # randomly mutate, each mutation has a 25% chance to apply.
+        # randomly mutate, each mutation has a 75% chance to apply.
         random_mutations = []
         for i in range(5):
             if random.random() < self.mutation_chance:
                 random_mutations.append(True)
             else:
                 random_mutations.append(False)
+
+        if dungeon.first_gen:
+            random_mutations[4] = True
 
         if random_mutations[0]:
             self.mutate_rules(dungeon)
@@ -39,6 +47,13 @@ class Mutation:
             self.mutate_environment(dungeon)
         if random_mutations[3]:
             self.mutate_treasure(dungeon)
+
+        # this part makes sure that the components are not limited (mostly relevant because of the monsters)
+        if self.ensure_proper_monsters:
+            proper_components = validity.monster_limit_check(dungeon)
+            while not proper_components:
+                self.mutate_monsters(dungeon)
+                proper_components = validity.monster_limit_check(dungeon)
 
         # While it is usually at another place, I've moved the map mutation to the bottom since it also mutates the
         # "Placement" attribute, which depends on all other attributes.
@@ -77,6 +92,7 @@ class Mutation:
         # choose a number of new monsters with bias to first monster's type.
         # divide the difficulty to choose new monsters
         # rebuild the dungeon.monster dictionary
+        vary_monsters = True
 
         monster_difficulty = 0
         for monster_type in dungeon.monsters:
@@ -89,6 +105,10 @@ class Mutation:
         dungeon.monsters = dict()
 
         # randomize difficulty
+        if dungeon.first_gen:
+            monster_difficulty = round(monster_difficulty * self.player_count / 2)
+            dungeon.first_gen = False
+
         mu = monster_difficulty
         sigma = monster_difficulty / 8
         new_difficulty = round(random.normalvariate(mu, sigma))
@@ -101,6 +121,8 @@ class Mutation:
         new_number = round(random.normalvariate(mu, sigma))
         if new_number < 2:
             new_number = 2
+        if new_number < 3 and vary_monsters:
+            new_number = 3
 
         # grab new monsters, add one normal of each.
         current_difficulty = 0
@@ -122,7 +144,7 @@ class Mutation:
                 new_monster_type = 0
                 while new_monster_type in monster_type_list or new_monster_type == 0:
                     new_monster_type = random.choices(self.all_monsters, theme_weight)[0]
-            # do the basics
+            # add a normal monster and its difficulty
             current_difficulty += new_monster_type.difficulty
             new_monster = [new_monster_type, 1, 0]
             monster_type_list.append(new_monster_type)
@@ -155,7 +177,17 @@ class Mutation:
             else:
                 sigma = mu/4
             new_entry = round(random.normalvariate(mu, sigma))
-            environment_list[i] = abs(new_entry)
+            if new_entry < 0:
+                new_entry = 0
+            if self.tile_minimum > new_entry > 0:
+                # 50/50 chance for minimum, else 0.
+                change = random.randint(0, 1)
+                if change == 0:
+                    new_entry = 0
+                if change == 1:
+                    new_entry = self.tile_minimum
+            # abs() is probably no longer necessary.
+            environment_list[i] = new_entry
         dungeon.obstacles = environment_list[0]
         dungeon.traps = environment_list[1]
         dungeon.h_terrain = environment_list[2]

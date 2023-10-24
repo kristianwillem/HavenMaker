@@ -20,9 +20,14 @@ def load_chests():
     return all_chests
 
 
-def load_rooms():
+def load_rooms(inclusion):
     all_rooms = []
-    for room in files.rooms_file.available_rooms:
+    included_rooms = []
+    if inclusion[0]:
+        included_rooms.extend(files.rooms_file.gloomhaven_rooms)
+    if inclusion[1]:
+        included_rooms.extend(files.rooms_file.frosthaven_rooms)
+    for room in included_rooms:
         room_name = room["name"]
         room_side = room["side"]
         room_theme = room["theme"]
@@ -33,9 +38,18 @@ def load_rooms():
     return all_rooms
 
 
-def load_monsters():
+def load_monsters(inclusion):
     all_monsters = []
-    for monster_type in files.monsters_file.available_monsters:
+    included_monsters = []
+    if inclusion[0]:
+        included_monsters.extend(files.monsters_file.gloomhaven_monsters)
+    if inclusion[1]:
+        included_monsters.extend(files.monsters_file.frosthaven_monsters)
+        if inclusion[0]:
+            included_monsters.remove(files.monsters_file.lurker)
+    included_monsters.extend(files.monsters_file.shared_monsters)
+
+    for monster_type in included_monsters:
         monster_name = monster_type["name"]
         monster_max = monster_type["max"]
         monster_difficulty = monster_type["difficulty"]
