@@ -39,6 +39,7 @@ def load_rooms(inclusion):
 
 
 def load_monsters(inclusion):
+    # including the monsters of gloomhaven, frosthaven, forgotten circles & jaws of the lion
     all_monsters = []
     included_monsters = []
     if inclusion[0]:
@@ -47,7 +48,18 @@ def load_monsters(inclusion):
         included_monsters.extend(files.monsters_file.frosthaven_monsters)
         if inclusion[0]:
             included_monsters.remove(files.monsters_file.lurker)
-    included_monsters.extend(files.monsters_file.shared_monsters)
+    if inclusion[0] or inclusion[1]:
+        included_monsters.extend(files.monsters_file.gloom_frost_monsters)
+    if inclusion[2]:
+        included_monsters.extend(files.monsters_file.forgotten_circles_monsters)
+    if inclusion[3]:
+        included_monsters.extend(files.monsters_file.jaws_of_the_lion_monsters)
+    if inclusion[0] or inclusion[3]:
+        included_monsters.extend(files.monsters_file.gloom_jaws_monsters)
+    if inclusion[1] or inclusion[3]:
+        included_monsters.extend(files.monsters_file.frost_jaws_monsters)
+    if inclusion[0] or inclusion[1] or inclusion[3]:
+        included_monsters.extend(files.monsters_file.gloom_frost_jaws_monsters)
 
     for monster_type in included_monsters:
         monster_name = monster_type["name"]

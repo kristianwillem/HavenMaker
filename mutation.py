@@ -48,23 +48,27 @@ class Mutation:
         if random_mutations[3]:
             self.mutate_treasure(dungeon)
 
-        # this part makes sure that the components are not limited (mostly relevant because of the monsters)
-        if self.ensure_proper_monsters:
-            proper_components = validity.monster_limit_check(dungeon)
-            while not proper_components:
-                self.mutate_monsters(dungeon)
-                proper_components = validity.monster_limit_check(dungeon)
-
         # While it is usually at another place, I've moved the map mutation to the bottom since it also mutates the
         # "Placement" attribute, which depends on all other attributes.
+        # Placement will always need to be mutated, since it puts everything on the map.
         if random_mutations[4]:
             self.mutate_map(dungeon)
+        else:
+            self.mutate_placement(dungeon)
 
         if self.ensure_proper_map:
             proper_map = validity.overlap_check(dungeon)
             while not proper_map:
                 self.mutate_map(dungeon)
                 proper_map = validity.overlap_check(dungeon)
+
+        # this part makes sure that the monsters are not limited.
+        if self.ensure_proper_monsters:
+            proper_components = validity.monster_limit_check(dungeon)
+            while not proper_components:
+                self.mutate_monsters(dungeon)
+                self.mutate_placement(dungeon)
+                proper_components = validity.monster_limit_check(dungeon)
 
     # for a more advanced (non-MVP) version:
     # gaussian distribution with the ideal as mean and a (variable) standard deviation.
@@ -378,6 +382,9 @@ class Mutation:
             # new_coordinates = random.choices(possible_coordinates, k=component_count)
             new_coordinates = []
             for i in range(component_count):
+                if len(possible_coordinates) == 0:
+                    #TODO
+                    pass
                 chosen_coordinate = random.choice(possible_coordinates)
                 possible_coordinates.remove(chosen_coordinate)
                 new_coordinates.append(chosen_coordinate)

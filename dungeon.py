@@ -53,6 +53,9 @@ class Dungeon:
         self.coordinates = []
         self.connection_coordinates = []
 
+        # list of coordinates per room for the monster limit
+        self.room_coordinates = dict()
+
         self.get_coordinates()
 
         # dungeon fitness score
@@ -82,9 +85,11 @@ class Dungeon:
 
         self.coordinates = []
         self.connection_coordinates = []
+        self.room_coordinates.clear()
         first_room = self.rooms[0]
         used_rooms = [first_room]
         self.coordinates.extend(room_coordinates[first_room])
+        self.room_coordinates[first_room] = room_coordinates[first_room]
         unused_connections = []
         for pair in connection_references:
             unused_connections.append(pair)
@@ -114,9 +119,12 @@ class Dungeon:
 
                 if connect:
                     difference = uf.subtract_coordinates(old_coordinates, new_coordinates)
+                    new_room_adapted_coordinates = []
                     for coordinate in room_coordinates[new_room]:
                         dungeon_coordinate = uf.add_coordinates(coordinate, difference)
                         self.coordinates.append(dungeon_coordinate)
+                        new_room_adapted_coordinates.append(dungeon_coordinate)
+                    self.room_coordinates[new_room] = new_room_adapted_coordinates
                     unused_connections.remove(connection)
                     # add connection coordinates
                     self.connection_coordinates.append(old_coordinates[0:3])

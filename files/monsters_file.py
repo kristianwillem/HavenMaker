@@ -418,42 +418,79 @@ shrike_fiend = {
     "theme": "Corruption"
 }
 
-available_monsters = [
-    bandit_guard,
-    bandit_archer,
-    city_guard,
-    city_archer,
-    inox_guard,
-    inox_archer,
-    inox_shaman,
-    vermling_scout,
-    vermling_shaman,
-    living_bones,
-    living_corpse,
-    living_spirit,
-    cultist,
-    flame_demon,
-    frost_demon,
-    earth_demon,
-    wind_demon,
-    night_demon,
-    sun_demon,
-    ooze,
-    giant_viper,
-    forest_imp,
-    hound,
-    cave_bear,
-    stone_golem,
-    ancient_artillery,
-    rending_drake,
-    spitting_drake,
-    lurker,
-    savvas_icestorm,
-    savvas_lavaflow,
-    harrower_infester,
-    deep_terror,
-    black_imp
-]
+# from here starts Forgotten Circles
+aesther_scout = {
+    "name": "Aesther Scout",
+    "max": 4,
+    "difficulty": 3,
+    "theme": "Aesther"
+}
+
+aesther_ashblade = {
+    "name": "Aesther Ashblade",
+    "max": 4,
+    "difficulty": 4,
+    "theme": "Aesther"
+}
+
+valrath_savage = {
+    "name": "Valrath Savage",
+    "max": 6,
+    "difficulty": 3,
+    "theme": "Valrath"
+}
+
+valrath_tracker = {
+    "name": "Valrath Tracker",
+    "max": 6,
+    "difficulty": 3,
+    "theme": "Valrath"
+}
+
+# from here starts Jaws of the Lion
+blood_imp = {
+    "name": "Blood Imp",
+    "max": 10,
+    "difficulty": 1,
+    "theme": "Blood"
+}
+
+vermling_raider = {
+    "name": "Vermling Raider",
+    "max": 6,
+    "difficulty": 2,
+    "theme": "Vermling"
+}
+
+black_sludge = {
+    "name": "Black Sludge",
+    "max": 6,
+    "difficulty": 2,
+    "theme": "Corruption"
+}
+
+zealot = {
+    "name": "Zealot",
+    "max": 6,
+    "difficulty": 2,
+    "theme": "Blood"
+}
+
+rat_monstrosity = {
+    "name": "Rat Monstrosity",
+    "max": 10,
+    "difficulty": 2,
+    "theme": "Corruption"
+}
+
+blood_monstrosity = {
+    "name": "Blood Monstrosity",
+    "max": 6,
+    "difficulty": 3,
+    "theme": "Blood"
+}
+
+
 
 gloomhaven_monsters = [
     bandit_guard,
@@ -462,20 +499,15 @@ gloomhaven_monsters = [
     inox_guard,
     inox_archer,
     inox_shaman,
-    living_corpse,
     cultist,
-    giant_viper,
     cave_bear,
-    stone_golem,
     lurker
 ]
 
-shared_monsters = [
+gloom_frost_monsters = [
     city_guard,
-    vermling_scout,
     vermling_shaman,
     living_bones,
-    living_spirit,
     flame_demon,
     frost_demon,
     earth_demon,
@@ -491,8 +523,7 @@ shared_monsters = [
     savvas_icestorm,
     savvas_lavaflow,
     harrower_infester,
-    deep_terror,
-    black_imp
+    deep_terror
 ]
 
 frosthaven_monsters = [
@@ -507,7 +538,6 @@ frosthaven_monsters = [
     frozen_corpse,
     burrowing_blade,
     snow_imp,
-    chaos_demon,
     lurker_mindsnipper,
     lurker_clawcrusher,
     lurker_wavethrower,
@@ -520,4 +550,36 @@ frosthaven_monsters = [
     robotic_boltshooter,
     flaming_bladespinner,
     shrike_fiend
+]
+
+forgotten_circles_monsters = [
+    aesther_scout,
+    aesther_ashblade,
+    valrath_savage,
+    valrath_tracker
+]
+
+jaws_of_the_lion_monsters = [
+    blood_imp,
+    vermling_raider,
+    black_sludge,
+    zealot,
+    rat_monstrosity,
+    blood_monstrosity
+]
+
+gloom_jaws_monsters = [
+    stone_golem,
+    living_corpse,
+    giant_viper
+]
+
+frost_jaws_monsters = [
+    chaos_demon
+]
+
+gloom_frost_jaws_monsters = [
+    black_imp,
+    living_spirit,
+    vermling_scout
 ]

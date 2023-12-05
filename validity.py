@@ -132,6 +132,37 @@ def limited_check(dungeon, inclusion):
 
 def monster_limit_check(dungeon):
     monster_limited = True
+    total_coordinates = dungeon.placements["monsters"].copy()
+    monster_coordinates = dict()
+
+    for monster_type in dungeon.monsters:
+        # get the monster coordinates
+        monster_data = dungeon.monsters[monster_type]
+        monster_class = monster_data[0]
+        total_amount = monster_data[1] + monster_data[2]
+        specific_monster_coordinates = []
+        for i in range(total_amount):
+            if not total_coordinates:
+                pass
+            location = total_coordinates.pop(0)
+            specific_monster_coordinates.append(location)
+        monster_coordinates[monster_type] = specific_monster_coordinates
+
+        # test for every room how many of this monster type are there
+        for room in dungeon.rooms:
+            room_count = 0
+            room_coordinates = dungeon.room_coordinates[room]
+            for mc in monster_coordinates:
+                for rc in room_coordinates:
+                    if mc is rc:
+                        room_count += 1
+            if room_count > monster_class.max_amount:
+                monster_limited = False
+    return monster_limited
+
+# this can be removed if the new monster check works
+def old_monster_limit_check(dungeon):
+    monster_limited = True
     for monster_type in dungeon.monsters:
         monster_count = 0
         monster_data = dungeon.monsters[monster_type]

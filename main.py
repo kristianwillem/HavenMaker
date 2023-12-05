@@ -5,18 +5,14 @@ from validity import check_validity
 import random
 import load
 from output import output
+import options
 
 
 def generate():
     cycles = 200
     output_test_dungeons = True
-    player_count = 3
-
-    # this part is used to choose what games to include. Because of how the generator works at the moment, Gloomhaven
-    # should always be set to be included.
-    include_gloomhaven = True
-    include_frosthaven = True
-    inclusion = [include_gloomhaven, include_frosthaven]
+    player_count = options.player_count
+    inclusion = options.inclusion
 
     # Initialize
     # This part loads all the necessary data for the program to function.
@@ -73,6 +69,7 @@ def generate():
         # dungeon, (as well as their total score), should be output as well.
         population.sort()
         best_dungeon = population[-1]
+        print("\n")
         output(best_dungeon)
         print("\n")
         print(best_dungeon.specific_scores)
